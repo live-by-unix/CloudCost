@@ -8,6 +8,7 @@ The tech stack is:
 * CSS
 * JS (or JSX)
 * React + Vite
+* Cloudflare Pages
 
 ## License
 
