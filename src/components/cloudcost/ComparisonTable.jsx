@@ -1,21 +1,38 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, Check, X } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, Check, X, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import ProviderLogo from './ProviderLogo';
 import { formatCurrency } from '@/lib/formatUtils';
+import { categories, getProviderCategory } from '@/lib/providerMetadata';
 
-export default function ComparisonTable({ results, currency, onProviderClick }) {
+export default function ComparisonTable({ results, currency, onProviderClick, config }) {
   const [sortKey, setSortKey] = useState("monthly");
   const [sortDir, setSortDir] = useState("asc");
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [favorites, setFavorites] = useState([]);
+
+  const toggleFavorite = (e, id) => {
+    e.stopPropagation();
+    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  };
 
   const sorted = useMemo(() => {
     let filtered = results.filter(r =>
       r.provider.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    if (activeCategory !== "all") {
+      filtered = filtered.filter(r => getProviderCategory(r.provider.id) === activeCategory);
+    }
+
     return filtered.sort((a, b) => {
+      // Favorites always sort to top
+      const aFav = favorites.includes(a.provider.id) ? 0 : 1;
+      const bFav = favorites.includes(b.provider.id) ? 0 : 1;
+      if (aFav !== bFav) return aFav - bFav;
+
       let aVal, bVal;
       switch (sortKey) {
         case "name": aVal = a.provider.name; bVal = b.provider.name; break;
@@ -30,7 +47,7 @@ export default function ComparisonTable({ results, currency, onProviderClick }) 
       if (typeof aVal === "string") return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
       return sortDir === "asc" ? aVal - bVal : bVal - aVal;
     });
-  }, [results, sortKey, sortDir, search]);
+  }, [results, sortKey, sortDir, search, activeCategory, favorites]);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -58,20 +75,38 @@ export default function ComparisonTable({ results, currency, onProviderClick }) 
 
   return (
     <section id="comparison" className="mt-12 scroll-mt-20">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold font-heading">Provider Comparison</h2>
-          <p className="text-muted-foreground mt-1">{sorted.length} providers sorted by {sortKey}</p>
+          <p className="text-muted-foreground mt-1">{sorted.length} providers · {config?.reservedTier === "1yr" ? "1-Year Reserved" : config?.reservedTier === "3yr" ? "3-Year Reserved" : "On-Demand"}</p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search providers..."
-            className="pl-9 w-64 h-9 bg-secondary border-border"
+            className="pl-9 w-full sm:w-64 h-9 bg-secondary border-border"
           />
         </div>
+      </div>
+
+      {/* Category filter bar */}
+      <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-1">
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${
+              activeCategory === cat.id
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            <span>{cat.icon}</span>
+            {cat.name}
+          </button>
+        ))}
       </div>
 
       {/* Desktop table */}
@@ -107,6 +142,9 @@ export default function ComparisonTable({ results, currency, onProviderClick }) 
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
+                    <button onClick={(e) => toggleFavorite(e, r.provider.id)} className="shrink-0">
+                      <Star className={`w-4 h-4 ${favorites.includes(r.provider.id) ? "fill-chart-3 text-chart-3" : "text-muted-foreground/30 hover:text-muted-foreground"}`} />
+                    </button>
                     <ProviderLogo provider={r.provider} size="sm" />
                     <div>
                       <p className="font-semibold">{r.provider.name}</p>
@@ -154,6 +192,9 @@ export default function ComparisonTable({ results, currency, onProviderClick }) 
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
+                <button onClick={(e) => toggleFavorite(e, r.provider.id)} className="shrink-0">
+                  <Star className={`w-4 h-4 ${favorites.includes(r.provider.id) ? "fill-chart-3 text-chart-3" : "text-muted-foreground/30"}`} />
+                </button>
                 <ProviderLogo provider={r.provider} size="sm" />
                 <div>
                   <p className="font-semibold">{r.provider.name}</p>

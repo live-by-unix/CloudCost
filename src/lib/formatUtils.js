@@ -4,7 +4,7 @@ export function formatCurrency(amount, currencyCode = "USD") {
   const curr = currencies.find(c => c.code === currencyCode) || currencies[0];
   const converted = amount * curr.rate;
   
-  if (currencyCode === "JPY") {
+  if (currencyCode === "JPY" || currencyCode === "KRW") {
     return `${curr.symbol}${Math.round(converted).toLocaleString()}`;
   }
   
@@ -39,7 +39,7 @@ export function parseShareURL() {
   if (params.size === 0) return null;
   
   const config = {};
-  const numericKeys = ["vcpu", "ram", "ssdStorage", "objectStorage", "bandwidth", "dbStorage", "requests", "users", "environments"];
+  const numericKeys = ["vcpu", "ram", "gpu", "ssdStorage", "objectStorage", "bandwidth", "dbStorage", "requests", "users", "environments"];
   
   numericKeys.forEach(key => {
     const val = params.get(key);
@@ -48,6 +48,9 @@ export function parseShareURL() {
   
   const region = params.get("region");
   if (region) config.region = region;
+
+  const reservedTier = params.get("reservedTier");
+  if (reservedTier) config.reservedTier = reservedTier;
   
   const currency = params.get("currency") || "USD";
   
@@ -55,12 +58,13 @@ export function parseShareURL() {
 }
 
 export function generateCSV(results, currency) {
-  const headers = ["Provider", "Monthly Cost", "Yearly Cost", "Compute", "Storage", "Bandwidth", "Database", "Platform Fee", "Free Tier"];
+  const headers = ["Provider", "Monthly Cost", "Yearly Cost", "Compute", "GPU", "Storage", "Bandwidth", "Database", "Platform Fee", "Free Tier"];
   const rows = results.map(r => [
     r.provider.name,
     formatCurrency(r.costs.monthly, currency),
     formatCurrency(r.costs.yearly, currency),
     formatCurrency(r.costs.compute, currency),
+    formatCurrency(r.costs.gpu, currency),
     formatCurrency(r.costs.storage, currency),
     formatCurrency(r.costs.bandwidth, currency),
     formatCurrency(r.costs.database, currency),

@@ -1,20 +1,30 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, ExternalLink } from 'lucide-react';
+import { Check, X, ExternalLink, Shield, Server, Calendar, Building } from 'lucide-react';
 import ProviderLogo from './ProviderLogo';
 import { formatCurrency } from '@/lib/formatUtils';
+import { getProviderMeta, getCategoryLabel } from '@/lib/providerMetadata';
 
 export default function ProviderDetailModal({ result, currency, open, onClose }) {
   if (!result) return null;
   const { provider, costs, badges } = result;
+  const meta = getProviderMeta(provider.id);
+
+  const metaItems = [
+    { icon: Building, label: "Category", value: getCategoryLabel(meta.category) },
+    { icon: Shield, label: "SLA", value: meta.sla },
+    { icon: Server, label: "Data Centers", value: meta.datacenters },
+    { icon: Calendar, label: "Founded", value: meta.founded }
+  ];
 
   const breakdownItems = [
     { label: "Compute", value: costs.compute, color: "bg-chart-1" },
+    { label: "GPU", value: costs.gpu, color: "bg-chart-4" },
     { label: "Storage", value: costs.storage, color: "bg-chart-2" },
     { label: "Bandwidth", value: costs.bandwidth, color: "bg-chart-3" },
-    { label: "Database", value: costs.database, color: "bg-chart-4" },
-    { label: "Requests", value: costs.requests, color: "bg-chart-5" },
+    { label: "Database", value: costs.database, color: "bg-chart-5" },
+    { label: "Requests", value: costs.requests, color: "bg-primary" },
     { label: "Platform Fee", value: costs.platformFee, color: "bg-muted-foreground" }
   ];
 
@@ -111,11 +121,33 @@ export default function ProviderDetailModal({ result, currency, open, onClose })
           </div>
         </div>
 
+        {/* Provider Metadata */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {metaItems.map(item => (
+            <div key={item.label} className="p-2 rounded-lg bg-muted/50 text-center">
+              <item.icon className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+              <p className="text-xs text-muted-foreground">{item.label}</p>
+              <p className="text-sm font-semibold">{item.value}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Free Tier */}
         <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/20">
           <h4 className="font-semibold text-sm mb-1">Free Tier</h4>
           <p className="text-xs text-muted-foreground">{provider.freeTier}</p>
         </div>
+
+        {/* Website link */}
+        <a
+          href={meta.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full p-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+        >
+          Visit {provider.name}
+          <ExternalLink className="w-4 h-4" />
+        </a>
       </DialogContent>
     </Dialog>
   );

@@ -5,7 +5,7 @@ export default function PresetWorkloads({ activePreset, onSelect }) {
   return (
     <section className="mt-10">
       <h3 className="text-lg font-semibold font-heading mb-4">Quick Presets</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
         {presets.map(preset => (
           <button
             key={preset.id}

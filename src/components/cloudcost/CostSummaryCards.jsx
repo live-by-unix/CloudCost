@@ -1,6 +1,7 @@
 import React from 'react';
-import { TrendingDown, DollarSign, Users, Globe } from 'lucide-react';
+import { TrendingDown, DollarSign, Users, CalendarDays } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/lib/formatUtils';
+import { calculateTCO } from '@/lib/costEngine';
 
 export default function CostSummaryCards({ results, currency, config }) {
   if (results.length === 0) return null;
@@ -9,6 +10,8 @@ export default function CostSummaryCards({ results, currency, config }) {
   const mostExpensive = results[results.length - 1];
   const avgMonthlyCost = results.reduce((sum, r) => sum + r.costs.monthly, 0) / results.length;
   const savings = mostExpensive.costs.yearly - cheapest.costs.yearly;
+  const tco5yr = calculateTCO(cheapest.provider, config, 5);
+  const tco5yrTotal = tco5yr[4].cumulative;
 
   const cards = [
     {
@@ -33,10 +36,10 @@ export default function CostSummaryCards({ results, currency, config }) {
       accent: "from-chart-3/20 to-chart-3/5"
     },
     {
-      label: "Cost Per User",
-      value: formatCurrency(cheapest.costs.costPerUser, currency),
-      sub: `${formatNumber(config.users)} users on ${cheapest.provider.name}`,
-      icon: Users,
+      label: "5-Year TCO",
+      value: formatCurrency(tco5yrTotal, currency),
+      sub: `on ${cheapest.provider.name}`,
+      icon: CalendarDays,
       accent: "from-chart-5/20 to-chart-5/5"
     }
   ];

@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatCurrency } from '@/lib/formatUtils';
+import { calculateTCO } from '@/lib/costEngine';
 
 const COLORS = [
   'hsl(245, 58%, 51%)', 'hsl(160, 60%, 45%)', 'hsl(30, 80%, 55%)',
@@ -81,6 +82,7 @@ function CostBreakdownPie({ results, currency }) {
 
   const data = [
     { name: "Compute", value: cheapest.costs.compute },
+    { name: "GPU", value: cheapest.costs.gpu },
     { name: "Storage", value: cheapest.costs.storage },
     { name: "Bandwidth", value: cheapest.costs.bandwidth },
     { name: "Database", value: cheapest.costs.database },
@@ -160,7 +162,37 @@ function TrafficGrowth({ results, currency }) {
   );
 }
 
-export default function CostCharts({ results, currency }) {
+function TCOProjection({ results, currency, config }) {
+  const top5 = results.slice(0, 5);
+  const years = 5;
+
+  const data = Array.from({ length: years }, (_, i) => {
+    const year = i + 1;
+    const point = { name: `Year ${year}` };
+    top5.forEach(r => {
+      const tco = calculateTCO(r.provider, config, year);
+      point[r.provider.name] = tco[year - 1].cumulative;
+    });
+    return point;
+  });
+
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <XAxis dataKey="name" fontSize={11} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+        <YAxis fontSize={11} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+        <Tooltip content={<CustomTooltip currency={currency} />} />
+        <Legend />
+        {top5.map((r) => (
+          <Line key={r.provider.id} type="monotone" dataKey={r.provider.name} stroke={r.provider.color} strokeWidth={2} dot={{ r: 4 }} />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export default function CostCharts({ results, currency, config }) {
   const [activeChart, setActiveChart] = useState("bar");
 
   const charts = {
@@ -168,18 +200,20 @@ export default function CostCharts({ results, currency }) {
     grouped: { label: "Monthly vs Yearly", component: <MonthlyVsYearly results={results} currency={currency} /> },
     pie: { label: "Cost Breakdown", component: <CostBreakdownPie results={results} currency={currency} /> },
     line: { label: "Scaling", component: <ScalingProjection results={results} currency={currency} /> },
-    area: { label: "Traffic Growth", component: <TrafficGrowth results={results} currency={currency} /> }
+    area: { label: "Traffic Growth", component: <TrafficGrowth results={results} currency={currency} /> },
+    tco: { label: "TCO (5-Year)", component: <TCOProjection results={results} currency={currency} config={config} /> }
   };
 
   return (
-    <section className="mt-12">
-      <h2 className="text-2xl md:text-3xl font-bold font-heading mb-6">Visual Analytics</h2>
+    <section className="mt-12" id="charts">
+      <h2 className="text-2xl md:text-3xl font-bold font-heading mb-2">Visual Analytics</h2>
+      <p className="text-muted-foreground mb-6">Interactive charts to visualize and compare costs</p>
       
       <div className="rounded-2xl border border-border bg-card shadow-sm p-4 md:p-6">
         <Tabs value={activeChart} onValueChange={setActiveChart}>
-          <TabsList className="bg-muted mb-4 flex-wrap h-auto gap-1">
+          <TabsList className="bg-muted mb-4 flex flex-nowrap overflow-x-auto h-auto gap-1 scrollbar-hide">
             {Object.entries(charts).map(([key, { label }]) => (
-              <TabsTrigger key={key} value={key} className="text-xs sm:text-sm">
+              <TabsTrigger key={key} value={key} className="text-xs sm:text-sm whitespace-nowrap shrink-0">
                 {label}
               </TabsTrigger>
             ))}

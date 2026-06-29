@@ -11,7 +11,7 @@ export default function HeroSection() {
       <div className="relative max-w-5xl mx-auto text-center px-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent border border-border mb-6 text-sm font-medium text-accent-foreground">
           <Zap className="w-3.5 h-3.5" />
-          Compare 13 cloud providers instantly
+          Compare 18 cloud providers instantly · 2025–2026 pricing
         </div>
         
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight font-display leading-tight">
@@ -24,9 +24,10 @@ export default function HeroSection() {
           </span>
         </h1>
         
-        <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Configure your workload and see real-time cost estimates across AWS, GCP, Azure, 
-          and 10 more providers. Find the perfect cloud for your budget.
+        <p className="mt-6 text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Configure your workload and see real-time cost estimates across AWS, GCP, Azure,
+          and 15 more providers — with GPU pricing, reserved discounts, side-by-side comparison,
+          and smart cost insights. Find the perfect cloud for your budget.
         </p>
         
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
@@ -45,7 +46,7 @@ export default function HeroSection() {
           </a>
         </div>
         
-        <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+        <div className="mt-12 flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-chart-2" /> Free to use
           </span>
@@ -53,7 +54,10 @@ export default function HeroSection() {
             <span className="w-2 h-2 rounded-full bg-primary" /> No sign-up needed
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-chart-3" /> Real pricing data
+            <span className="w-2 h-2 rounded-full bg-chart-3" /> GPU & reserved pricing
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-chart-5" /> 11 currencies
           </span>
         </div>
       </div>

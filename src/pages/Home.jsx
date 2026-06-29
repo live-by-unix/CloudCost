@@ -1,15 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { providers, defaultConfig } from '@/lib/providerData';
+import { providers, defaultConfig, presets, currencies, regions } from '@/lib/providerData';
 import { calculateAllProviders, assignBadges, simulateTrafficMultiplier } from '@/lib/costEngine';
 import { parseShareURL } from '@/lib/formatUtils';
 import Navbar from '@/components/cloudcost/Navbar';
 import HeroSection from '@/components/cloudcost/HeroSection';
+import StatsBar from '@/components/cloudcost/StatsBar';
 import WorkloadConfigurator from '@/components/cloudcost/WorkloadConfigurator';
 import PresetWorkloads from '@/components/cloudcost/PresetWorkloads';
 import CostSummaryCards from '@/components/cloudcost/CostSummaryCards';
 import ComparisonTable from '@/components/cloudcost/ComparisonTable';
 import CostCharts from '@/components/cloudcost/CostCharts';
 import WhatIfAnalysis from '@/components/cloudcost/WhatIfAnalysis';
+import InsightsPanel from '@/components/cloudcost/InsightsPanel';
+import SideBySideCompare from '@/components/cloudcost/SideBySideCompare';
 import RecommendationCards from '@/components/cloudcost/RecommendationCards';
 import ExportTools from '@/components/cloudcost/ExportTools';
 import FAQSection from '@/components/cloudcost/FAQSection';
@@ -71,11 +74,16 @@ export default function Home() {
       <HeroSection />
 
       <main className="max-w-7xl mx-auto px-4 pb-20">
+        <div className="-mt-8 mb-8">
+          <StatsBar providerCount={providers.length} currencyCount={currencies.length} regionCount={regions.length} presetCount={presets.length} />
+        </div>
         <WorkloadConfigurator config={config} onChange={c => { setConfig(c); setActivePreset(null); }} />
         <PresetWorkloads activePreset={activePreset} onSelect={handlePreset} />
         <CostSummaryCards results={results} currency={currency} config={effectiveConfig} />
-        <ComparisonTable results={results} currency={currency} onProviderClick={setSelectedResult} />
-        <CostCharts results={results} currency={currency} />
+        <ComparisonTable results={results} currency={currency} config={effectiveConfig} onProviderClick={setSelectedResult} />
+        <InsightsPanel results={results} currency={currency} config={effectiveConfig} />
+        <CostCharts results={results} currency={currency} config={effectiveConfig} />
+        <SideBySideCompare results={results} currency={currency} onProviderClick={setSelectedResult} />
         <WhatIfAnalysis activeMultiplier={trafficMultiplier} onMultiplierChange={setTrafficMultiplier} />
         <RecommendationCards results={results} currency={currency} onProviderClick={setSelectedResult} />
         <ExportTools results={results} config={config} currency={currency} />
